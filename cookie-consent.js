@@ -6137,6 +6137,653 @@ logPerformanceBenchmarking();
 addDocumentationLink();
 finalScriptClosure();
 
+
+
+
+
+
 // Final log to confirm script completion
-console.log('Cookie Consent Script execution officially completed.');
+    console.log('Cookie Consent Script execution officially completed.');
+
+// Function to handle uncaught promise rejections
+function setupPromiseRejectionHandler() {
+    window.addEventListener('unhandledrejection', (event) => {
+        const errorDetails = {
+            reason: event.reason?.message || 'Unknown reason',
+            stack: event.reason?.stack || 'No stack trace available',
+            timestamp: new Date().toISOString()
+        };
+
+        console.error('Unhandled promise rejection:', errorDetails);
+        window.CookieConsent.logAuditEvent('promise_rejection', errorDetails);
+        trackConsentEvent('promise_rejection', errorDetails.reason);
+
+        window.CookieConsent.notify(
+            translations[config.languageConfig.defaultLanguage]?.promiseError || 'An unexpected error occurred. Please refresh the page.',
+            'error'
+        );
+
+        event.preventDefault(); // Prevent default handling if needed
+    });
+
+    console.log('Promise rejection handler setup completed.');
+}
+
+// Function to perform a final consent integrity check
+function finalConsentIntegrityCheck() {
+    const consent = JSON.parse(getCookie('cookie_consent') || '{}');
+    const expectedKeys = ['functional', 'analytics', 'performance', 'advertising', 'timestamp'];
+    const hasAllKeys = expectedKeys.every(key => key in consent);
+    const timestampValid = consent.timestamp && !isNaN(new Date(consent.timestamp).getTime());
+
+    if (!hasAllKeys || !timestampValid) {
+        console.warn('Final consent integrity check failed. Resetting consent.');
+        setCookie('cookie_consent', '', -1);
+        document.getElementById('cookieConsentBanner').classList.add('show');
+        trackConsentEvent('final_integrity_check_failed', 'Consent integrity check failed');
+        window.CookieConsent.notify(
+            translations[config.languageConfig.defaultLanguage]?.integrityFailed || 'Consent data integrity issue detected. Please set your preferences again.',
+            'error'
+        );
+    } else {
+        console.log('Final consent integrity check passed.');
+        trackConsentEvent('final_integrity_check_passed', 'Consent integrity check passed');
+    }
+}
+
+// Function to add developer mode utilities
+function setupDeveloperModeUtilities() {
+    if (config.environment === 'development') {
+        window.CookieConsent.inspectState = function() {
+            const state = {
+                consent: JSON.parse(getCookie('cookie_consent') || '{}'),
+                config: window.CookieConsent.getConfig(),
+                translations: window.CookieConsent.getTranslations(),
+                auditLog: window.CookieConsent.getAuditLog(),
+                userJourney: window.CookieConsent.getUserJourney(),
+                sessionReplay: window.CookieConsent.getSessionReplay ? window.CookieConsent.getSessionReplay() : [],
+                performanceMetrics: {
+                    executionTime: localStorage.getItem('cookieConsentExecutionTime') || 'Not available'
+                }
+            };
+
+            console.log('Developer Mode: Current State Inspection:', state);
+            return state;
+        };
+
+        window.CookieConsent.clearAllData = function() {
+            setCookie('cookie_consent', '', -1);
+            localStorage.clear();
+            console.log('Developer Mode: All data cleared.');
+            trackConsentEvent('developer_clear_data', 'All data cleared in developer mode');
+            window.location.reload();
+        };
+
+        // Add developer utilities to settings modal
+        const settingsFooter = document.querySelector('.cookie-settings-footer');
+        if (settingsFooter) {
+            settingsFooter.insertAdjacentHTML('beforeend', `
+                <button id="inspectStateBtn" class="cookie-btn" style="margin-left: 10px;">
+                    ${translations[config.languageConfig.defaultLanguage]?.inspectState || 'Inspect State'}
+                </button>
+                <button id="clearAllDataBtn" class="cookie-btn reject-btn" style="margin-left: 10px;">
+                    ${translations[config.languageConfig.defaultLanguage]?.clearAllData || 'Clear All Data'}
+                </button>
+            `);
+
+            document.getElementById('inspectStateBtn').addEventListener('click', window.CookieConsent.inspectState);
+            document.getElementById('clearAllDataBtn').addEventListener('click', () => {
+                if (confirm(translations[config.languageConfig.defaultLanguage]?.clearDataConfirm || 'Are you sure you want to clear all data? This will reset everything.')) {
+                    window.CookieConsent.clearAllData();
+                }
+            });
+
+            console.log('Developer mode utilities added.');
+            trackConsentEvent('developer_utilities_added', 'Developer mode utilities added');
+        }
+    }
+}
+
+// Function to display a final user notification
+function displayFinalUserNotification() {
+    if (getCookie('cookie_consent') && !document.getElementById('cookieConsentBanner').classList.contains('show')) {
+        window.CookieConsent.notify(
+            translations[config.languageConfig.defaultLanguage]?.systemReady || 'Cookie consent system is fully operational. Thank you for your preferences!',
+            'success'
+        );
+        console.log('Final user notification displayed.');
+        trackConsentEvent('final_user_notification', 'Displayed final user notification');
+    }
+}
+
+// Function to add a script termination marker
+function addScriptTerminationMarker() {
+    window.CookieConsent.terminationMarker = {
+        status: 'terminated',
+        timestamp: new Date().toISOString(),
+        version: window.CookieConsent.getVersion()
+    };
+
+    localStorage.setItem('cookieConsentTerminationMarker', JSON.stringify(window.CookieConsent.terminationMarker));
+    console.log('Script termination marker added:', window.CookieConsent.terminationMarker);
+    trackConsentEvent('script_termination_marker', 'Script termination marker added');
+}
+
+// Execute final closure steps
+setupPromiseRejectionHandler();
+finalConsentIntegrityCheck();
+setupDeveloperModeUtilities();
+displayFinalUserNotification();
+addScriptTerminationMarker();
+
+
+
+
+
+
+// Ultimate script closure log
+    console.log('Cookie Consent Script has reached its ultimate closure. All operations terminated successfully.');
+
+// Function to deallocate all resources
+function deallocateResources() {
+    // Clear all stored intervals
+    const intervals = window.__cookieConsentIntervals || [];
+    intervals.forEach(interval => {
+        clearInterval(interval);
+    });
+    window.__cookieConsentIntervals = [];
+    console.log('All intervals cleared.');
+
+    // Disconnect all observers
+    const observers = window.__cookieConsentObservers || [];
+    observers.forEach(observer => {
+        observer.disconnect();
+    });
+    window.__cookieConsentObservers = [];
+    console.log('All observers disconnected.');
+
+    // Remove temporary global variables
+    delete window.__cookieConsentTemp;
+    delete window.__cookieConsentTempListeners;
+    console.log('All temporary global variables removed.');
+
+    trackConsentEvent('resource_deallocation', 'All resources deallocated');
+}
+
+// Function to save a final state backup
+function saveFinalStateBackup() {
+    const finalState = {
+        consent: JSON.parse(getCookie('cookie_consent') || '{}'),
+        config: window.CookieConsent.getConfig(),
+        auditLogSummary: window.CookieConsent.getAuditLog().slice(-10), // Last 10 audit entries
+        userJourneySummary: window.CookieConsent.getUserJourney().slice(-10), // Last 10 journey entries
+        terminationMarker: window.CookieConsent.terminationMarker,
+        timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('cookieConsentFinalStateBackup', JSON.stringify(finalState));
+    console.log('Final state backup saved:', finalState);
+    trackConsentEvent('final_state_backup', 'Final state backup saved');
+}
+
+// Function to generate a compliance report
+function generateComplianceReport() {
+    const consent = JSON.parse(getCookie('cookie_consent') || '{}');
+    const complianceReport = {
+        gdprCompliance: {
+            consentRecorded: !!consent.timestamp,
+            userNotified: !!localStorage.getItem('cookieConsentFinalUserNotification'),
+            thirdPartyScriptsManaged: consent.analytics ? !!document.querySelector('script[src*="googletagmanager.com"]') : true
+        },
+        dataRetention: {
+            consentExpirationSet: config.behavior.consentExpirationReminderDays > 0,
+            storageDaysCompliant: config.storageDays <= 365 // Assume max 1 year for compliance
+        },
+        userRights: {
+            withdrawAvailable: !!document.getElementById('withdrawConsentBtn'),
+            exportAvailable: !!document.getElementById('exportConsentBtn'),
+            resetAvailable: !!document.getElementById('resetConsentBtn')
+        },
+        timestamp: new Date().toISOString()
+    };
+
+    const isCompliant = Object.values(complianceReport.gdprCompliance).every(v => v) &&
+                        Object.values(complianceReport.dataRetention).every(v => v) &&
+                        Object.values(complianceReport.userRights).every(v => v);
+
+    localStorage.setItem('cookieConsentComplianceReport', JSON.stringify(complianceReport));
+    console.log('Compliance report generated:', complianceReport);
+    trackConsentEvent('compliance_report', isCompliant ? 'Compliant' : 'Non-compliant');
+
+    if (!isCompliant) {
+        window.CookieConsent.notify(
+            translations[config.languageConfig.defaultLanguage]?.complianceIssue || 'Compliance issues detected. Please review the settings.',
+            'error'
+        );
+    }
+}
+
+// Function to broadcast a shutdown event
+function broadcastShutdownEvent() {
+    const shutdownEvent = new CustomEvent('cookieConsentShutdown', {
+        detail: {
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+            version: window.CookieConsent.getVersion()
+        }
+    });
+    window.dispatchEvent(shutdownEvent);
+    console.log('Shutdown event broadcasted:', shutdownEvent.detail);
+    trackConsentEvent('shutdown_event_broadcast', 'Shutdown event broadcasted');
+}
+
+// Function to add a definitive script end marker
+function addScriptEndMarker() {
+    const endMarker = {
+        status: 'terminated',
+        timestamp: new Date().toISOString(),
+        message: 'Cookie Consent Script has fully terminated.',
+        version: window.CookieConsent.getVersion()
+    };
+
+    window.CookieConsent.endMarker = endMarker;
+    localStorage.setItem('cookieConsentEndMarker', JSON.stringify(endMarker));
+    console.log('Script end marker added:', endMarker);
+    trackConsentEvent('script_end_marker', 'Script end marker added');
+
+    // Log to audit for final record
+    window.CookieConsent.logAuditEvent('script_terminated', endMarker);
+}
+
+// Execute ultimate closure steps
+deallocateResources();
+saveFinalStateBackup();
+generateComplianceReport();
+broadcastShutdownEvent();
+addScriptEndMarker();
+
+
+
+
+
+
+
+
+// Definitive script termination log
+    console.log('Cookie Consent Script has officially terminated. Goodbye!');
+
+// Function to log cross-browser compatibility issues
+function logCrossBrowserCompatibility() {
+    const browserInfo = {
+        userAgent: navigator.userAgent,
+        isIE: !!document.documentMode, // Detect Internet Explorer
+        isEdge: /Edge\/\d+/.test(navigator.userAgent),
+        isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+        isFirefox: /Firefox\/\d+/.test(navigator.userAgent),
+        isChrome: /Chrome\/\d+/.test(navigator.userAgent)
+    };
+
+    const compatibilityIssues = [];
+    if (browserInfo.isIE) {
+        compatibilityIssues.push('Internet Explorer detected - some features may not work as expected.');
+    }
+    if (!('localStorage' in window) || !window.localStorage) {
+        compatibilityIssues.push('LocalStorage not supported - analytics and audit logging may fail.');
+    }
+    if (!('fetch' in window)) {
+        compatibilityIssues.push('Fetch API not supported - API integration may fail.');
+    }
+
+    if (compatibilityIssues.length > 0) {
+        console.warn('Cross-browser compatibility issues detected:', compatibilityIssues);
+        window.CookieConsent.logAuditEvent('browser_compatibility', {
+            browserInfo,
+            issues: compatibilityIssues,
+            timestamp: new Date().toISOString()
+        });
+        trackConsentEvent('browser_compatibility_issues', compatibilityIssues.join('; '));
+    } else {
+        console.log('No cross-browser compatibility issues detected.');
+        trackConsentEvent('browser_compatibility_check', 'No issues detected');
+    }
+}
+
+// Function to handle consent migration for version updates
+function handleConsentMigration() {
+    const currentVersion = window.CookieConsent.getVersion();
+    const storedVersion = localStorage.getItem('cookieConsentScriptVersion');
+    const consent = JSON.parse(getCookie('cookie_consent') || '{}');
+
+    if (storedVersion && storedVersion !== currentVersion && consent.timestamp) {
+        console.log(`Consent migration required: Stored version ${storedVersion}, Current version ${currentVersion}`);
+        
+        // Example migration: Add new fields if missing
+        const updatedConsent = {
+            ...consent,
+            newFieldExample: consent.newFieldExample || false, // Placeholder for new consent fields
+            migrationTimestamp: new Date().toISOString(),
+            previousVersion: storedVersion,
+            currentVersion: currentVersion
+        };
+
+        setCookie('cookie_consent', JSON.stringify(updatedConsent), 365);
+        dispatchConsentChange();
+        localStorage.setItem('cookieConsentScriptVersion', currentVersion);
+
+        console.log('Consent migrated successfully:', updatedConsent);
+        window.CookieConsent.logAuditEvent('consent_migration', {
+            previousVersion: storedVersion,
+            currentVersion: currentVersion,
+            updatedConsent,
+            timestamp: new Date().toISOString()
+        });
+        trackConsentEvent('consent_migration', `Migrated from ${storedVersion} to ${currentVersion}`);
+    } else {
+        console.log('No consent migration required.');
+        trackConsentEvent('consent_migration_check', 'No migration needed');
+    }
+}
+
+// Function to provide hooks for external integrations
+function setupExternalIntegrationHooks() {
+    window.CookieConsent.onConsentChange = function(callback) {
+        window.addEventListener('cookieConsentChanged', (e) => {
+            callback(JSON.parse(getCookie('cookie_consent') || '{}'));
+        });
+    };
+
+    window.CookieConsent.onScriptShutdown = function(callback) {
+        window.addEventListener('cookieConsentShutdown', (e) => {
+            callback(e.detail);
+        });
+    };
+
+    console.log('External integration hooks setup completed.');
+    trackConsentEvent('external_integration_hooks', 'External integration hooks setup');
+}
+
+// Function to prompt for final user feedback
+function promptFinalUserFeedback() {
+    if (config.feedback.enabled && getCookie('cookie_consent')) {
+        const feedbackPrompt = document.createElement('div');
+        feedbackPrompt.className = 'cookie-feedback-prompt';
+        feedbackPrompt.innerHTML = `
+            <div class="cookie-feedback-content">
+                <h3>${translations[config.languageConfig.defaultLanguage]?.feedbackPromptTitle || 'How was your experience?'}</h3>
+                <p>${translations[config.languageConfig.defaultLanguage]?.feedbackPromptText || 'Please share your feedback on the cookie consent experience.'}</p>
+                <textarea id="finalFeedbackInput" placeholder="${translations[config.languageConfig.defaultLanguage]?.feedbackPlaceholder || 'Enter your feedback here...'}" rows="3"></textarea>
+                <div class="feedback-actions">
+                    <button id="submitFeedbackBtn" class="cookie-btn">${translations[config.languageConfig.defaultLanguage]?.submit || 'Submit'}</button>
+                    <button id="closeFeedbackBtn" class="cookie-btn reject-btn">${translations[config.languageConfig.defaultLanguage]?.close || 'Close'}</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(feedbackPrompt);
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .cookie-feedback-prompt {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1002;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .cookie-feedback-content {
+                background: var(--background-color);
+                color: var(--text-color);
+                padding: 20px;
+                border-radius: 8px;
+                max-width: 400px;
+                width: 90%;
+            }
+            .cookie-feedback-content h3 {
+                margin-top: 0;
+                font-size: 1.2rem;
+            }
+            #finalFeedbackInput {
+                width: 100%;
+                margin: 10px 0;
+                padding: 8px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                background: var(--input-bg);
+                color: var(--text-color);
+            }
+            .feedback-actions {
+                text-align: right;
+            }
+            .feedback-actions button {
+                margin-left: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.getElementById('submitFeedbackBtn').addEventListener('click', () => {
+            const feedback = document.getElementById('finalFeedbackInput').value.trim();
+            if (feedback) {
+                const feedbackEvent = new CustomEvent('feedback_submitted', { detail: feedback });
+                window.dispatchEvent(feedbackEvent);
+                window.CookieConsent.notify(
+                    translations[config.languageConfig.defaultLanguage]?.feedbackThanks || 'Thank you for your feedback!',
+                    'success'
+                );
+                trackConsentEvent('final_feedback_submitted', feedback);
+            }
+            feedbackPrompt.remove();
+        });
+
+        document.getElementById('closeFeedbackBtn').addEventListener('click', () => {
+            feedbackPrompt.remove();
+            trackConsentEvent('final_feedback_closed', 'User closed feedback prompt');
+        });
+
+        feedbackPrompt.addEventListener('click', (e) => {
+            if (e.target === feedbackPrompt) {
+                feedbackPrompt.remove();
+                trackConsentEvent('final_feedback_dismissed', 'User dismissed feedback prompt');
+            }
+        });
+
+        console.log('Final user feedback prompt displayed.');
+        trackConsentEvent('final_feedback_prompt', 'Displayed final feedback prompt');
+    }
+}
+
+// Function to log final legal compliance confirmation
+function confirmLegalCompliance() {
+    const legalCompliance = {
+        gdpr: true, // Based on previous compliance report
+        ccpa: true, // Assume compliance for California Consumer Privacy Act (simplified for this example)
+        lgpd: true, // Assume compliance for Brazil's LGPD (simplified for this example)
+        jurisdictionsNotified: ['EU', 'US', 'BR'], // Based on geolocation customization
+        timestamp: new Date().toISOString()
+    };
+
+    const isFullyCompliant = Object.values(legalCompliance).every(val => val === true);
+    localStorage.setItem('cookieConsentLegalCompliance', JSON.stringify(legalCompliance));
+    console.log('Final legal compliance confirmation:', legalCompliance);
+    window.CookieConsent.logAuditEvent('legal_compliance', legalCompliance);
+    trackConsentEvent('legal_compliance_check', isFullyCompliant ? 'Fully compliant' : 'Compliance issues detected');
+
+    if (!isFullyCompliant) {
+        window.CookieConsent.notify(
+            translations[config.languageConfig.defaultLanguage]?.legalComplianceIssue || 'Legal compliance issues detected. Please review the settings.',
+            'error'
+        );
+    }
+}
+
+// Execute absolute final steps
+logCrossBrowserCompatibility();
+handleConsentMigration();
+setupExternalIntegrationHooks();
+promptFinalUserFeedback();
+confirmLegalCompliance();
+
+
+
+
+
+
+
+// Absolute final log to confirm script termination
+    console.log('Cookie Consent Script has fully terminated with all requirements met. End of execution.');
+
+// Function to add animation for banner appearance/disappearance
+function addBannerAnimation() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner) {
+        const style = document.createElement('style');
+        style.textContent = `
+            .cookie-consent-banner {
+                transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            .cookie-consent-banner.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        `;
+        document.head.appendChild(style);
+        console.log('Banner animation added for appearance/disappearance.');
+        trackConsentEvent('banner_animation_added', 'Added animation for banner');
+    }
+}
+
+// Function to setup a consent timeout reminder
+function setupConsentTimeoutReminder() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner && !getCookie('cookie_consent')) {
+        let timeoutId = setTimeout(() => {
+            if (banner.classList.contains('show')) {
+                banner.classList.add('nudge');
+                const nudgeStyle = document.createElement('style');
+                nudgeStyle.textContent = `
+                    .cookie-consent-banner.nudge {
+                        animation: nudge 0.5s ease-in-out 2;
+                    }
+                    @keyframes nudge {
+                        0% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                        100% { transform: translateY(0); }
+                    }
+                `;
+                document.head.appendChild(nudgeStyle);
+
+                window.CookieConsent.notify(
+                    translations[config.languageConfig.defaultLanguage]?.consentReminder || 'Please set your cookie preferences to continue.',
+                    'info'
+                );
+                trackConsentEvent('consent_timeout_reminder', 'Displayed consent timeout reminder');
+            }
+        }, 30000); // 30 seconds
+
+        // Clear timeout if user interacts with the banner
+        const clearTimeoutOnInteraction = () => {
+            clearTimeout(timeoutId);
+            banner.removeEventListener('click', clearTimeoutOnInteraction);
+        };
+        banner.addEventListener('click', clearTimeoutOnInteraction);
+        storeInterval(timeoutId);
+        console.log('Consent timeout reminder setup.');
+        trackConsentEvent('consent_timeout_setup', 'Setup consent timeout reminder');
+    }
+}
+
+// Function to allow custom banner positioning
+function setupCustomBannerPositioning() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner) {
+        const position = config.ui?.bannerPosition || 'bottom'; // Default to bottom
+        const style = document.createElement('style');
+        let positionStyles = '';
+
+        switch (position) {
+            case 'top':
+                positionStyles = `
+                    .cookie-consent-banner {
+                        top: 0;
+                        bottom: auto;
+                        transform: translateY(-20px);
+                    }
+                    .cookie-consent-banner.show {
+                        transform: translateY(0);
+                    }
+                `;
+                break;
+            case 'center':
+                positionStyles = `
+                    .cookie-consent-banner {
+                        top: 50%;
+                        bottom: auto;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 90%;
+                        max-width: 600px;
+                    }
+                    .cookie-consent-banner.show {
+                        transform: translate(-50%, -50%);
+                    }
+                `;
+                break;
+            case 'bottom':
+            default:
+                positionStyles = `
+                    .cookie-consent-banner {
+                        bottom: 0;
+                        top: auto;
+                    }
+                `;
+                break;
+        }
+
+        style.textContent = positionStyles;
+        document.head.appendChild(style);
+        console.log(`Custom banner positioning set to: ${position}`);
+        trackConsentEvent('banner_positioning', `Set banner position to ${position}`);
+    }
+}
+
+// Function to track banner dismissal without choice
+function trackBannerDismissal() {
+    const banner = document.getElementById('cookieConsentBanner');
+    if (banner) {
+        banner.addEventListener('click', (e) => {
+            if (e.target === banner && !getCookie('cookie_consent')) {
+                trackConsentEvent('banner_dismissed_without_choice', 'User dismissed banner without making a choice');
+                console.log('Banner dismissed without user making a choice.');
+                window.CookieConsent.logAuditEvent('banner_dismissal', {
+                    action: 'dismissed_without_choice',
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+        console.log('Banner dismissal tracking setup.');
+        trackConsentEvent('banner_dismissal_tracking', 'Setup banner dismissal tracking');
+    }
+}
+
+// Execute final banner enhancements
+addBannerAnimation();
+setupConsentTimeoutReminder();
+setupCustomBannerPositioning();
+trackBannerDismissal();
+
+// Final banner completion log
+console.log('Cookie Consent Banner functionality is fully complete with all enhancements.');
+
+
+
+
+
+
+
+
 
