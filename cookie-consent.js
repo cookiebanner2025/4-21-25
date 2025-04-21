@@ -81,7 +81,7 @@ behavior: {
     },
     
     // Banner Visibility Control
-    showBanner: false  // Set to false to hide banner initially
+    showBanner: true  // Set to false to hide banner initially
     );
 
 // ============== MAIN IMPLEMENTATION ============== //
