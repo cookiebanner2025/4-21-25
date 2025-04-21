@@ -70,19 +70,8 @@ behavior: {
 },
 
     // UI Theme (can be 'default' or 'classic')
-    // UI Theme (can be 'default' or 'classic')
-    uiTheme: 'default',
-    
-    // Dark Mode Configuration
-    darkMode: {
-        enabled: true, // Set to true to enable dark mode by default
-        autoDetect: true, // Automatically detect system preference
-        toggleButton: true // Show dark mode toggle button
-    },
-    
-    // Banner Visibility Control
-    showBanner: true  // Set to false to hide banner initially
-    );
+    uiTheme: 'default'
+};
 
 // ============== MAIN IMPLEMENTATION ============== //
 // Initialize dataLayer for Google Tag Manager
@@ -101,10 +90,17 @@ gtag('consent', 'default', {
 });
 
 // Color scheme - easily customizable
-// Current theme selection
-const currentTheme = config.uiTheme === 'classic' ? 
-    (detectDarkMode() ? classicDarkColorScheme : classicColorScheme) : 
-    (detectDarkMode() ? darkColorScheme : colorScheme);
+const colorScheme = {
+    primary: '#2ecc71',      // Green (accept button color)
+    secondary: '#3498db',    // Blue (save button color)
+    danger: '#e74c3c',       // Red (reject button color)
+    textDark: '#2c3e50',     // Dark text
+    textLight: '#7f8c8d',    // Light text
+    background: '#ffffff',   // White background
+    toggleActive: '#2ecc71', // Same as primary
+    toggleInactive: '#bdc3c7'// Gray for inactive
+};
+
 // Classic theme color scheme
 const classicColorScheme = {
     primary: '#4CAF50',      // Green (accept button color)
@@ -116,52 +112,6 @@ const classicColorScheme = {
     toggleActive: '#4CAF50', // Same as primary
     toggleInactive: '#9E9E9E'// Gray for inactive
 };
-
-
-
-
-const classicColorScheme = {
-    primary: '#4CAF50',
-    secondary: '#2196F3',
-    danger: '#f44336',
-    textDark: '#212121',
-    textLight: '#757575',
-    background: '#ffffff',
-    toggleActive: '#4CAF50',
-    toggleInactive: '#9E9E9E'
-};
-// <-- Add new code AFTER this line (line 125)
-
-
-// Dark mode color scheme
-const darkColorScheme = {
-    primary: '#2ecc71',      // Green (accept button)
-    secondary: '#3498db',    // Blue (save button)
-    danger: '#e74c3c',       // Red (reject button)
-    textDark: '#ecf0f1',     // Light text (dark bg)
-    textLight: '#bdc3c7',    // Lighter text
-    background: '#2c3e50',   // Dark background
-    toggleActive: '#2ecc71', // Toggle active
-    toggleInactive: '#7f8c8d'// Toggle inactive
-};
-
-// Classic dark mode color scheme
-const classicDarkColorScheme = {
-    primary: '#4CAF50',      // Green (accept button)
-    secondary: '#2196F3',    // Blue (save button)
-    danger: '#f44336',       // Red (reject button)
-    textDark: '#f5f5f5',     // Light text (dark bg)
-    textLight: '#9E9E9E',    // Lighter text
-    background: '#212121',   // Dark background
-    toggleActive: '#4CAF50', // Toggle active
-    toggleInactive: '#616161'// Toggle inactive
-};
-// Dark mode detection function          // <-- This is Step 3
-function detectDarkMode() {             // Line 161
-    if (!config.darkMode.autoDetect) return config.darkMode.enabled;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
 
 // Enhanced cookie database with detailed descriptions
 const cookieDatabase = {
@@ -1567,16 +1517,6 @@ function injectConsentHTML(detectedCookies, language = 'en') {
     };
     
     // Generate language selector dropdown if enabled
-    
-        // Dark mode toggle button
-    const darkModeToggle = config.darkMode.toggleButton ? `
-    <div class="dark-mode-toggle">
-        <label class="toggle-switch">
-            <input type="checkbox" id="darkModeToggle" ${detectDarkMode() ? 'checked' : ''}>
-            <span class="toggle-slider"></span>
-        </label>
-        <span>${detectDarkMode() ? '☀️ Light Mode' : '🌙 Dark Mode'}</span>
-    </div>` : '';
     const languageSelector = config.languageConfig.showLanguageSelector ? `
     <div class="language-selector">
         <select id="cookieLanguageSelect">
@@ -1597,10 +1537,9 @@ function injectConsentHTML(detectedCookies, language = 'en') {
     const html = `
     <!-- Main Consent Banner -->
     <div id="cookieConsentBanner" class="cookie-consent-banner">
-            <div class="cookie-consent-container">
-        ${languageSelector}
-        ${darkModeToggle}
-        <div class="cookie-consent-content">
+        <div class="cookie-consent-container">
+            ${languageSelector}
+            <div class="cookie-consent-content">
                 <h2>${lang.title}</h2>
                 <p>${lang.description}</p>
                 <a href="/privacy-policy/" class="privacy-policy-link">${lang.privacy}</a>
@@ -1661,71 +1600,6 @@ function injectConsentHTML(detectedCookies, language = 'en') {
     
     <style>
     /* Main Banner Styles - Updated to match image */
-
-    /* Dark Mode Styles */
-    body.dark-mode .cookie-consent-banner,
-    body.dark-mode .cookie-settings-content,
-    body.dark-mode .cookie-analytics-content {
-        background-color: ${darkColorScheme.background};
-        color: ${darkColorScheme.textDark};
-    }
-
-    body.dark-mode .cookie-consent-content h2,
-    body.dark-mode .cookie-settings-header h2,
-    body.dark-mode .cookie-analytics-header h2,
-    body.dark-mode .toggle-container h3,
-    body.dark-mode .cookie-details-table th {
-        color: ${darkColorScheme.textDark};
-    }
-
-    body.dark-mode .cookie-consent-content p,
-    body.dark-mode .cookie-details-table td,
-    body.dark-mode .no-cookies-message {
-        color: ${darkColorScheme.textLight};
-    }
-
-    body.dark-mode .cookie-details-container,
-    body.dark-mode .cookie-details-header {
-        border-color: #3d4b5d;
-    }
-
-    body.dark-mode .cookie-details-header {
-        background-color: #34495e;
-    }
-
-    body.dark-mode .cookie-details-content {
-        background-color: #2c3e50;
-        border-color: #3d4b5d;
-    }
-
-    body.dark-mode .cookie-settings-header,
-    body.dark-mode .cookie-analytics-header {
-        background-color: #34495e;
-        border-color: #3d4b5d;
-    }
-
-    body.dark-mode .cookie-settings-body,
-    body.dark-mode .cookie-analytics-body {
-        background-color: #2c3e50;
-    }
-
-    /* Dark Mode Toggle Styles */
-    .dark-mode-toggle {
-        position: absolute;
-        top: 15px;
-        ${config.behavior.floatingButtonPosition === 'left' ? 'right: 80px;' : 'left: 80px;'}
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: ${currentTheme.textLight};
-    }
-
-    .dark-mode-toggle span {
-        cursor: pointer;
-    }
-
-    
 .cookie-consent-banner {
     position: fixed;
     bottom: 20px;
@@ -2649,26 +2523,6 @@ function initializeCookieConsent(detectedCookies, language) {
         loadCookiesAccordingToConsent(consentData);
         showFloatingButton();
     }
-
-
-    // Initialize dark mode if needed
-    if (detectDarkMode()) {
-        document.body.classList.add('dark-mode');
-    }
-
-    // Set up dark mode toggle
-    if (config.darkMode.toggleButton) {
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        if (darkModeToggle) {
-            darkModeToggle.addEventListener('change', function() {
-                document.body.classList.toggle('dark-mode', this.checked);
-                // Update the label text
-                const label = this.closest('.dark-mode-toggle').querySelector('span');
-                label.textContent = this.checked ? '☀️ Light Mode' : '🌙 Dark Mode';
-            });
-        }
-    }
-
     
     // Set up event listeners
     setupEventListeners();
@@ -2850,17 +2704,13 @@ function hideFloatingButton() {
     }, 300);
 }
 
-  function showCookieBanner() {  // Fixed function name
-    if (!config.showBanner) return;
-
+function showCookieBanner() {
     const banner = document.getElementById('cookieConsentBanner');
-    if (banner) {  // Added safety check
-        banner.style.display = 'block';
-       setTimeout(() => {
-           banner.classList.add('show');
-        }, (config.behavior.bannerDelay || 0) * 1000); // Fixed millisecond conversion
-  }
-   }
+    banner.style.display = 'block';
+    setTimeout(() => {
+        banner.classList.add('show');
+    }, config.behavior.bannerDelay * 1000); // Convert seconds to milliseconds
+}
 
 function hideCookieBanner() {
     const banner = document.getElementById('cookieConsentBanner');
