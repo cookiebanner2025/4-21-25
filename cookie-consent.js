@@ -69,7 +69,7 @@ const config = {
     uiTheme: 'default',
     
     // Banner position (new feature)
-    bannerPosition: 'top', // 'top', 'bottom', 'left', 'right'
+    bannerPosition: 'left', // 'top', 'bottom', 'left', 'right'
     
     // Separate controls for UI elements (new feature)
     uiControls: {
