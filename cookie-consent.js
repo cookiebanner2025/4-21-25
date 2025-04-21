@@ -67,7 +67,7 @@ const config = {
 
     // UI Theme (can be 'default' or 'classic')
     uiTheme: 'default',
-    
+
     // Banner position (new feature)
     bannerPosition: 'bottom', // 'top', 'bottom', 'left', 'right'
     
